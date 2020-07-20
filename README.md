@@ -7,7 +7,7 @@ A random generator of hard open shop scheduling problems based on Guéret and Pr
 git clone https://github.com/eddinho/hossp.git
 cd hossp
 mkdir build && cd build && cmake ..
-cmake .
+cmake --build .
 ```
 hossp will be located in the folder ./build/bin
 
