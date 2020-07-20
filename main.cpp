@@ -121,6 +121,7 @@ int main(int argc, char **argv)
                         ("p,pert", "number of perturbations", cxxopts::value<int>()->default_value("100"))
                         ("s,seed", "random seed", cxxopts::value<long>()->default_value("4294967"))
                         ("g,generate", "number of instances to generate", cxxopts::value<int>()->default_value("1"));
+    
     if (argc == 1)
     {
       std::cout << option.help();
