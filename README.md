@@ -48,7 +48,7 @@ Usage:
 
 The following command generates 5 random instances, of 5 jobs and 5 machines and outputs the instances to stdout (-o).
 
-To create the instances files rand5_5_1.txt to rand5_5_5.txt in current folder, use option (-d ./) or remove option -o
+To create the instances files rand5_5_1.txt to rand5_5_5.txt in the current folder, use option (-d ./) or remove option -o
 
 ```bash
 ./build/bin/hossp.exe -n 5 -m 5 -g 5 -o
