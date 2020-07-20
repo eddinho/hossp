@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2020 seb
+Copyright (c) 2020 S.E. B.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
