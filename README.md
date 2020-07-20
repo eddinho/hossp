@@ -32,7 +32,7 @@ Generating problem instances
 ```bash
 hossp: Generate hard random instances of the open shop problem
 Usage:
-  ossp.ai_rand [OPTION...]
+  hossp [OPTION...]
 
   -h, --help          This help message and exit
   -k, arg             the k value (default: 1000)
