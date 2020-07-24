@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2020 S.E. B.
+Copyright (c) 2020 S.E.B.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -19,7 +19,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-
 #include <fstream>
 #include <sstream>
 #include <ciso646>
@@ -42,20 +41,20 @@ std::string generateInstance(int nb_jobs, int nb_machines, int k, int nb_perturb
   Randomizer random;
 
   // populate ptime_arr
-  for (int i = 1; i <= nb_jobs; ++i)
+  for (int i = 0; i < nb_jobs; ++i)
   {
     // sum of each row = k
-    for (int j = 1; j <= nb_machines; ++j)
+    for (int j = 0; j < nb_machines; ++j)
     {
       ptime_arr(i, j) = k / nb_jobs;
     }
     // except diagonal
-    if (i <= nb_jobs and i <= nb_machines)
-      ptime_arr(i, i) += k % nb_jobs;
+    if (i < nb_jobs and i < nb_machines)
+      ptime_arr(i, i) += k % (nb_jobs-1);
   }
 
   // perturbations to to ptime_arr
-  for (int i = 1; i <= nb_perturbations; ++i)
+  for (int i = 0; i < nb_perturbations; ++i)
   {
     // task 1
     int idx1 = 0;
@@ -67,10 +66,10 @@ std::string generateInstance(int nb_jobs, int nb_machines, int k, int nb_perturb
     // select randomly 2 taks randomely
     while (idx1 == idx3 or idx2 == idx4)
     {
-      idx1 = static_cast<int>(random(1, (int)ptime_arr.rows()));
-      idx2 = static_cast<int>(random(1, (int)ptime_arr.cols()));
-      idx3 = static_cast<int>(random(1, (int)ptime_arr.rows()));
-      idx4 = static_cast<int>(random(1, (int)ptime_arr.cols()));
+      idx1 = static_cast<int>(random(0, (int)ptime_arr.rows()-1));
+      idx2 = static_cast<int>(random(0, (int)ptime_arr.cols()-1));
+      idx3 = static_cast<int>(random(0, (int)ptime_arr.rows()-1));
+      idx4 = static_cast<int>(random(0, (int)ptime_arr.cols()-1));
     }
     // the maximum removable work is the minimum of the two durations
     // minus 1 to avoid creating tasks of length 0
@@ -93,9 +92,9 @@ std::string generateInstance(int nb_jobs, int nb_machines, int k, int nb_perturb
      << "%\n";
 
   ss << nb_jobs << " " << nb_machines << "\n";
-  for (int i = 1; i <= nb_jobs; ++i)
+  for (int i = 0; i < nb_jobs; ++i)
   {
-    for (int j = 1; j <= nb_machines; ++j)
+    for (int j = 0; j < nb_machines; ++j)
     {
       ss << ptime_arr(i, j) << " ";
     }
@@ -173,7 +172,7 @@ int main(int argc, char **argv)
     int k = option_parse["k"].as<int>();
     int nb_instances = option_parse["g"].as<int>();
 
-    for (int i = 1; i <= nb_instances; ++i)
+    for (int i = 0; i < nb_instances; ++i)
     {
       // use random parameters if parameters are 0 or option not used =
       Randomizer random;
