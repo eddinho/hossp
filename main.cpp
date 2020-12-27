@@ -22,10 +22,26 @@ SOFTWARE.
 #include <fstream>
 #include <sstream>
 #include <ciso646>
+#include <iomanip>
 
 #include "Randomizer.h"
 #include "thirdparty/cxxopts/cxxopts.hpp"
 #include "thirdparty/rv2d/rv2d.h"
+
+#ifndef __has_include
+  static_assert(false, "__has_include not supported");
+#else
+#  if __has_include(<filesystem>)
+#    include <filesystem>
+     namespace fs = std::filesystem;
+#  elif __has_include(<experimental/filesystem>)
+#    include <experimental/filesystem>
+     namespace fs = std::experimental::filesystem;
+#  elif __has_include(<boost/filesystem.hpp>)
+#    include <boost/filesystem.hpp>
+     namespace fs = boost::filesystem;
+#  endif
+#endif
 
 // minmax
 #ifndef MIN
@@ -35,10 +51,27 @@ SOFTWARE.
 #define MAX(a, b) (((a) > (b)) ? (a) : (b))
 #endif
 
-std::string generateInstance(int nb_jobs, int nb_machines, int k, int nb_perturbations, double fixed_percentage)
+std::pair<std::string, std::string> generateInstance(int i, int nb_jobs, int nb_machines, int k, int nb_perturbations, double fixed_percentage)
 {
+  std::string logdir = "./log/";
+ 	fs::create_directories(logdir);
+
   rv2d::RowVector2D<int> ptime_arr(nb_jobs, nb_machines);
   Randomizer random;
+
+  float workload = 0.0;
+  bool is_random_hard = false;
+
+  if (k == 0 or nb_perturbations == 0 or fixed_percentage == 0)
+    is_random_hard = true;
+
+  if (is_random_hard)
+  {
+    // use random parameters if parameters are 0
+    k = static_cast<int>(random(nb_jobs * nb_machines, nb_jobs * nb_machines * 100));
+    nb_perturbations = static_cast<int>(random(nb_jobs * nb_jobs, nb_jobs * nb_jobs * nb_machines));
+    fixed_percentage = (double)random(RAND_MAX) / (RAND_MAX);
+  }
 
   // populate ptime_arr
   for (int i = 0; i < nb_jobs; ++i)
@@ -50,7 +83,7 @@ std::string generateInstance(int nb_jobs, int nb_machines, int k, int nb_perturb
     }
     // except diagonal
     if (i < nb_jobs and i < nb_machines)
-      ptime_arr(i, i) += k % (nb_jobs-1);
+      ptime_arr(i, i) += k % (nb_jobs - 1);
   }
 
   // perturbations to to ptime_arr
@@ -66,10 +99,10 @@ std::string generateInstance(int nb_jobs, int nb_machines, int k, int nb_perturb
     // select randomly 2 taks randomely
     while (idx1 == idx3 or idx2 == idx4)
     {
-      idx1 = static_cast<int>(random(0, (int)ptime_arr.rows()-1));
-      idx2 = static_cast<int>(random(0, (int)ptime_arr.cols()-1));
-      idx3 = static_cast<int>(random(0, (int)ptime_arr.rows()-1));
-      idx4 = static_cast<int>(random(0, (int)ptime_arr.cols()-1));
+      idx1 = static_cast<int>(random(0, (int)ptime_arr.rows() - 1));
+      idx2 = static_cast<int>(random(0, (int)ptime_arr.cols() - 1));
+      idx3 = static_cast<int>(random(0, (int)ptime_arr.rows() - 1));
+      idx4 = static_cast<int>(random(0, (int)ptime_arr.cols() - 1));
     }
     // the maximum removable work is the minimum of the two durations
     // minus 1 to avoid creating tasks of length 0
@@ -85,24 +118,78 @@ std::string generateInstance(int nb_jobs, int nb_machines, int k, int nb_perturb
     ptime_arr(idx1, idx4) = ptime_arr(idx1, idx4) + removed;
   }
 
-  std::stringstream ss;
-  ss << "// k = " << k
-     << ", pert = " << nb_perturbations
-     << ", fix = " << fixed_percentage
-     << "%\n";
+  // calculate the workload of the instance
+  // classical lower bound
+  std::vector<int> machine(nb_machines + 1);
+  float lower_bound = 0;
+  float pttot = 0;
+  for (int i = 0; i < nb_jobs; i++)
+  {
+    int job = 0;
+    for (int j = 0; j < nb_machines; j++)
+    {
+      // add processing time on scheduled machine
+      machine[j] += ptime_arr(i, j);
+      job += ptime_arr(i, j);
 
-  ss << nb_jobs << " " << nb_machines << "\n";
+      pttot += ptime_arr(i, j);
+    }
+    lower_bound = MAX(lower_bound, job);
+  }
+  for (int j = 0; j < nb_machines; j++)
+  {
+    lower_bound = MAX(lower_bound, machine[j]);
+  }
+  workload = float((pttot / (nb_machines * lower_bound)));
+
+  // create an instance name
+  std::stringstream ss_name;
+  ss_name << "rand_"
+          << std::setfill('0') << std::setw(2) << nb_jobs
+          << "_"
+          << std::setfill('0') << std::setw(2) << nb_machines
+          << "_"
+          << std::setfill('0') << std::setw(2) << i;
+
+  // print instance statistics
+  std::ofstream out;
+  std::string filename = logdir + "/stats.txt";
+  out.open(filename, std::ofstream::out | std::ofstream::app);
+  if (out.is_open())
+  {
+
+    out << ss_name.str()
+        << ","
+        << workload
+        << ","
+        << k
+        << ","
+        << nb_perturbations
+        << ","
+        << fixed_percentage
+        << "\n";
+  }
+  out.close();
+
+  std::stringstream ss_instance;
+  ss_instance << "// k = " << k
+              << ", pert = " << nb_perturbations
+              << ", fix = " << fixed_percentage
+              << ", workload = " << workload
+              << "\n";
+
+  ss_instance << nb_jobs << " " << nb_machines << "\n";
   for (int i = 0; i < nb_jobs; ++i)
   {
     for (int j = 0; j < nb_machines; ++j)
     {
-      ss << ptime_arr(i, j) << " ";
+      ss_instance << ptime_arr(i, j) << " ";
     }
-    ss << "\n";
+    ss_instance << "\n";
   }
-  ss << "\n";
+  ss_instance << "\n";
 
-  return ss.str();
+  return std::make_pair(ss_name.str(), ss_instance.str());
 }
 
 int main(int argc, char **argv)
@@ -111,16 +198,17 @@ int main(int argc, char **argv)
   {
     cxxopts::Options option("hossp", "hossp: Generate hard random instances of the open shop problem");
     option.add_options()("h,help", "This help message and exit")
-                        ("k", "the k value", cxxopts::value<int>()->default_value("1000"))
+                        ("k", "the k value", cxxopts::value<int>()->default_value("0"))
                         ("o,out", "Enable stdout", cxxopts::value<bool>()->default_value("false"))
                         ("d,dir", "Output directory", cxxopts::value<std::string>()->default_value(""))
                         ("n,jobs", "number of jobs", cxxopts::value<int>()->default_value("4"))
                         ("m,machines", "number of machines", cxxopts::value<int>()->default_value("4"))
-                        ("f,fix", "fixed percentage", cxxopts::value<double>()->default_value("0.95"))
-                        ("p,pert", "number of perturbations", cxxopts::value<int>()->default_value("100"))
+                        ("f,fix", "fixed percentage", cxxopts::value<double>()->default_value("0"))
+                        ("p,pert", "number of perturbations", cxxopts::value<int>()->default_value("0"))
                         ("s,seed", "random seed", cxxopts::value<long>()->default_value("4294967"))
-                        ("g,generate", "number of instances to generate", cxxopts::value<int>()->default_value("1"));
-    
+                        ("g,generate", "number of instances to generate", cxxopts::value<int>()->default_value("1"))
+                        ;
+
     if (argc == 1)
     {
       std::cout << option.help();
@@ -174,33 +262,24 @@ int main(int argc, char **argv)
 
     for (int i = 0; i < nb_instances; ++i)
     {
-      // use random parameters if parameters are 0 or option not used =
-      Randomizer random;
-      if (option_parse["k"].count() == 0 or k == 0)
-        k = static_cast<int>(random(nb_jobs * nb_machines, nb_jobs * nb_machines * 100));
-      if (option_parse["pert"].count() == 0 or nb_perturbations == 0)
-        nb_perturbations = static_cast<int>(random(nb_jobs * nb_jobs, nb_jobs * nb_jobs * nb_machines));
-      if (option_parse["fix"].count() == 0 or fixed_percentage == 0)
-        fixed_percentage = MAX(0.25, (double)random(RAND_MAX) / (RAND_MAX));
 
-      const std::string instance = generateInstance(nb_jobs, nb_machines, k, nb_perturbations, fixed_percentage);
+      const std::pair<std::string, std::string> instance = generateInstance(i, nb_jobs, nb_machines, k, nb_perturbations, fixed_percentage);
 
       if (is_stdout)
-        std::cout << instance;
+        std::cout << instance.second;
       if (not(is_stdout and out_dir.empty()))
       {
-        std::string file_name = out_dir + "rand" + std::to_string(nb_jobs) + "_" + std::to_string(nb_machines) + "_" + std::to_string(i) + ".txt";
+        std::string file_name = out_dir + instance.first + ".txt";
         std::ofstream trc_file;
         trc_file.open(file_name, std::ofstream::out);
         if (trc_file.is_open())
         {
-          trc_file << instance;
+          trc_file << instance.second;
           trc_file.close();
         }
         else
         {
-          std::cerr << "Error: cannot create file " << file_name << std::endl;
-          ;
+          std::cerr << "Error: cannot create file " << file_name << std::endl;          
           exit(1);
         }
       }
