@@ -11,18 +11,18 @@
 \maketitle
 \thispagestyle{empty}
 
-The random instances generator takes the number of jobs $n$ and the number of machine $m$ as input and require three parameters $k$, $p$ and $f$.
-An instance is generated in two steps, the first step creates the $ m \times n $ matrix $P$ of processing time with a parameters $k$. The second step performs a number of perturbations $p$ to the $ m \times n $ matrix $P$ in combination with a parameter $f$.
+The random instances generator takes the number of jobs $n$ and the number of machines $m$ as input and requires three parameters $k$, $p$ and $f$.
+An instance is generated in two steps, the first step creates the $ m \times n $ matrix $P$ of processing times using the parameter $k$. The second step performs a number of perturbations $p$ to the $ m \times n $ matrix $P$ in combination with a parameter $f$.
 
 Parameters $k$, $p$ and $f$ are described by:
 
 \begin{itemize}
-    \item $k$: integer number such that the sum of each line of the processing times matrix is equal to $k$. The value $k \mod m$ is added to the diagonal of $P$. 
-    \item $p$: number of perturbations. Such that, for each perturbation, two task's processing times $P_{ij}$ and $ P_{kl}$, $i \neq k $ and $j \neq l$, are randomly selected in $P$ for which is subtracted a fixed value calculated with the parameter $f$.
-    \item $f$: a ratio used to calculate the fixed value \textit{to be subtracted} from The maximum \textit{substractable} processing time. The maximum removable processing time corresponds to the minimum of the two randomly selected tasks $P_{ij}$ and $ P_{kl}$ (minus 1 to avoid creating tasks of length 0). A random value (between zero and the difference between \textit{substractable} and \textit{to be subtracted}) values is also added to that fixed value.
+    \item $k$: integer number, such that the sum of each line of $P$ is equal to $k$. The value $k \mod m$ is added to the diagonal of $P$. 
+    \item $p$: number of perturbations, such that for each perturbation, two task's processing times $P_{ij}$ and $ P_{kl}$, $i \neq k $ and $j \neq l$, are randomly selected for which is subtracted a fixed value calculated with the parameter $f$.
+    \item $f$: a ratio used to calculate the fixed value \textit{to be subtracted} from the maximum \textit{substractable} processing time. The maximum removable processing time corresponds to the minimum of the two randomly selected tasks $P_{ij}$ and $ P_{kl}$ (minus 1 to avoid creating tasks of length 0). A random value (between zero and the difference between \textit{substractable} and \textit{to be subtracted}) is also added to that fixed value.
 \end{itemize}
 
-The value removed from $p_{ij}$ and $p_{kl}$ is added to the $p_{il}$ and $p_{kj}$ to keep the sum of all rows equal to $k$.
+The value subtracted from $P_{ij}$ and $P_{kl}$ is added to the $P_{il}$ and $P_{kj}$ to keep the sum of all rows equal to $k$.
 For numerous generated instances the parameters $k$, $p$ and $f$ are randomly generated as follows:
 
 \begin{itemize}
