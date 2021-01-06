@@ -1,6 +1,8 @@
 # A Hard Open Shop Scheduling Problems Generator
 A random generator of hard open shop scheduling problems based on Guéret and Prins (1999).
 
+Read more [here](./doc/hossp.pdf)
+
 ## Installation
 
 ```bash
