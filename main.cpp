@@ -26,21 +26,20 @@ SOFTWARE.
 
 #include "Randomizer.h"
 #include "thirdparty/cxxopts/cxxopts.hpp"
-#include "thirdparty/rv2d/rv2d.h"
 
 #ifndef __has_include
-  static_assert(false, "__has_include not supported");
+static_assert(false, "__has_include not supported");
 #else
-#  if __has_include(<filesystem>)
-#    include <filesystem>
-     namespace fs = std::filesystem;
-#  elif __has_include(<experimental/filesystem>)
-#    include <experimental/filesystem>
-     namespace fs = std::experimental::filesystem;
-#  elif __has_include(<boost/filesystem.hpp>)
-#    include <boost/filesystem.hpp>
-     namespace fs = boost::filesystem;
-#  endif
+#if __has_include(<filesystem>)
+#include <filesystem>
+namespace fs = std::filesystem;
+#elif __has_include(<experimental/filesystem>)
+#include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
+#elif __has_include(<boost/filesystem.hpp>)
+#include <boost/filesystem.hpp>
+namespace fs = boost::filesystem;
+#endif
 #endif
 
 // minmax
@@ -54,9 +53,9 @@ SOFTWARE.
 std::pair<std::string, std::string> generateInstance(int i, int nb_jobs, int nb_machines, int k, int nb_perturbations, double fixed_percentage)
 {
   std::string logdir = "./log/";
- 	fs::create_directories(logdir);
+  fs::create_directories(logdir);
 
-  rv2d::RowVector2D<int> ptime_arr(nb_jobs, nb_machines);
+  std::vector<int> ptime_arr(nb_jobs * nb_machines);
   Randomizer random;
 
   float workload = 0.0;
@@ -67,11 +66,17 @@ std::pair<std::string, std::string> generateInstance(int i, int nb_jobs, int nb_
 
   if (is_random_hard)
   {
-    // use random parameters if parameters are 0
+    // use these random parameters if parameters are 0
     k = static_cast<int>(random(nb_jobs * nb_machines, nb_jobs * nb_machines * 100));
     nb_perturbations = static_cast<int>(random(nb_jobs * nb_jobs, nb_jobs * nb_jobs * nb_machines));
     fixed_percentage = (double)random(RAND_MAX) / (RAND_MAX);
   }
+  
+  // calculate the task index in ptime_arr
+  auto calTaskIdx = [&](int row_idx, int col_idx) 
+  {
+    return row_idx * nb_machines + col_idx;
+  };
 
   // populate ptime_arr
   for (int i = 0; i < nb_jobs; ++i)
@@ -79,11 +84,11 @@ std::pair<std::string, std::string> generateInstance(int i, int nb_jobs, int nb_
     // sum of each row = k
     for (int j = 0; j < nb_machines; ++j)
     {
-      ptime_arr(i, j) = k / nb_jobs;
+      ptime_arr[calTaskIdx(i, j)] = k / nb_jobs;
     }
     // except diagonal
     if (i < nb_jobs and i < nb_machines)
-      ptime_arr(i, i) += k % (nb_jobs - 1);
+      ptime_arr[calTaskIdx(i, i)] += k % (nb_jobs);
   }
 
   // perturbations to to ptime_arr
@@ -99,23 +104,23 @@ std::pair<std::string, std::string> generateInstance(int i, int nb_jobs, int nb_
     // select randomly 2 taks randomely
     while (idx1 == idx3 or idx2 == idx4)
     {
-      idx1 = static_cast<int>(random(0, (int)ptime_arr.rows() - 1));
-      idx2 = static_cast<int>(random(0, (int)ptime_arr.cols() - 1));
-      idx3 = static_cast<int>(random(0, (int)ptime_arr.rows() - 1));
-      idx4 = static_cast<int>(random(0, (int)ptime_arr.cols() - 1));
+      idx1 = static_cast<int>(random(0, nb_jobs - 1));
+      idx2 = static_cast<int>(random(0,  nb_machines - 1));
+      idx3 = static_cast<int>(random(0, nb_jobs - 1));
+      idx4 = static_cast<int>(random(0, nb_machines - 1));
     }
     // the maximum removable work is the minimum of the two durations
     // minus 1 to avoid creating tasks of length 0
-    const int removable = MIN(ptime_arr(idx1, idx2), ptime_arr(idx3, idx4)) - 1;
+    const int removable = MIN(ptime_arr[calTaskIdx(idx1, idx2)], ptime_arr[calTaskIdx(idx3, idx4)]) - 1;
     // fixed part that must be removed
     const int must_remove = static_cast<int>(trunc(removable * fixed_percentage));
     // randomely duration to be remove
     const int removed = must_remove + static_cast<int>(random(0, removable - must_remove));
     // substract from the removed frmo the first two tasks
-    ptime_arr(idx1, idx2) = ptime_arr(idx1, idx2) - removed;
+    ptime_arr[calTaskIdx(idx1, idx2)] -= removed;
     // add the amount removed from the two first tasks,
     // to keep all line sums equal to K
-    ptime_arr(idx1, idx4) = ptime_arr(idx1, idx4) + removed;
+    ptime_arr[calTaskIdx(idx1, idx4)] += removed;
   }
 
   // calculate the workload of the instance
@@ -129,10 +134,9 @@ std::pair<std::string, std::string> generateInstance(int i, int nb_jobs, int nb_
     for (int j = 0; j < nb_machines; j++)
     {
       // add processing time on scheduled machine
-      machine[j] += ptime_arr(i, j);
-      job += ptime_arr(i, j);
-
-      pttot += ptime_arr(i, j);
+      machine[j] += ptime_arr[calTaskIdx(i, j)];
+      job += ptime_arr[calTaskIdx(i, j)];
+      pttot += ptime_arr[calTaskIdx(i, j)];
     }
     lower_bound = MAX(lower_bound, job);
   }
@@ -183,7 +187,7 @@ std::pair<std::string, std::string> generateInstance(int i, int nb_jobs, int nb_
   {
     for (int j = 0; j < nb_machines; ++j)
     {
-      ss_instance << ptime_arr(i, j) << " ";
+      ss_instance << ptime_arr[calTaskIdx(i, j)] << " ";
     }
     ss_instance << "\n";
   }
