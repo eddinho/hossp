@@ -1,6 +1,8 @@
 # A Hard Open Shop Scheduling Problems Generator
 A random generator of hard open shop scheduling problems based on Guéret and Prins (1999).
 
+Read more [here](./doc/hossp.pdf)
+
 ## Installation
 
 ```bash
@@ -35,20 +37,18 @@ Usage:
   hossp [OPTION...]
 
   -h, --help          This help message and exit
-  -k, arg             the k value (default: 1000)
+  -k arg              the k value (default: 0)
   -o, --out           Enable stdout
   -d, --dir arg       Output directory (default: "")
   -n, --jobs arg      number of jobs (default: 4)
   -m, --machines arg  number of machines (default: 4)
-  -f, --fix arg       fixed percentage (default: 0.95)
-  -p, --pert arg      number of perturbations (default: 100)
+  -f, --fix arg       fixed percentage (default: 0)
+  -p, --pert arg      number of perturbations (default: 0)
   -s, --seed arg      random seed (default: 4294967)
   -g, --generate arg  number of instances to generate (default: 1)
 ```
 
 The following command generates 5 random instances, of 5 jobs and 5 machines and outputs the instances to stdout (-o).
-
-To create the instances files rand5_5_1.txt to rand5_5_5.txt in the current folder, use option (-d ./) or remove option -o
 
 ```bash
 ./build/bin/hossp.exe -n 5 -m 5 -g 5 -o
