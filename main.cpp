@@ -87,7 +87,7 @@ std::pair<std::string, std::string> generateInstance(int i, int nb_jobs, int nb_
       // sum of each row = k
       for (int j = 0; j < nb_machines; ++j)
       {
-        ptime_arr[calTaskIdx(i, j)] = floor(k / nb_machines);
+        ptime_arr[calTaskIdx(i, j)] = int(floor(k / nb_machines));
       }
       ptime_arr[calTaskIdx(i, i)] += k % (nb_machines);
     }
@@ -104,7 +104,7 @@ std::pair<std::string, std::string> generateInstance(int i, int nb_jobs, int nb_
       // sum of each row = k
       for (int j = 0; j < nb_machines; ++j)
       {
-        ptime_arr[calTaskIdx(i, j)] = floor(k / nb_machines);
+        ptime_arr[calTaskIdx(i, j)] = int(floor(k / nb_machines));
         if (inc - i == j)
           ptime_arr[calTaskIdx(i, j)] += k % (nb_machines);
       }
@@ -150,7 +150,7 @@ std::pair<std::string, std::string> generateInstance(int i, int nb_jobs, int nb_
 
   // calculate the workload of the instance
   // classical lower bound
-  std::vector<int> machine(nb_machines + 1);
+  std::vector<int> machine(nb_machines);
   float lower_bound = 0;
   float pttot = 0;
   for (int i = 0; i < nb_jobs; i++)
