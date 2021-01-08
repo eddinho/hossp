@@ -1,5 +1,6 @@
 \documentclass[fleqn,10pt]{article}
 \usepackage{amsmath}
+\usepackage{amssymb}
 
 % type user-defined commands here
 
@@ -12,17 +13,23 @@
 \thispagestyle{empty}
 
 The random instances generator takes the number of jobs $n$ and the number of machines $m$ as input and requires three parameters $k$, $p$ and $f$.
-An instance is generated in two steps, the first step creates the $ m \times n $ matrix $P$ of processing times using the parameter $k$. The second step performs a number of perturbations $p$ to the $ m \times n $ matrix $P$ in combination with a parameter $f$.
 
-Parameters $k$, $p$ and $f$ are described by:
+An instance is generated in two steps, the first step creates the $ n \times m $ matrix $P$ of processing times using the parameter $k$ such that all elements of $P$ are equal to $\dfrac{k}{m}$ (rounded down to the nearest integer). The second step performs a number of perturbations $p$ to the matrix $P$.
+
+A parameter $f$ is used to calculate $v$: a fixed value \textit{to be subtracted} and $mv$: a \textit{maximum subtractable} value. The parameters $k$, $p$ and $f$ are described by:
 
 \begin{itemize}
     \item $k$: integer number, such that the sum of each line of $P$ is equal to $k$. The value $k \mod m$ is added to the diagonal of $P$. 
-    \item $p$: number of perturbations, such that for each perturbation, two task's processing times $P_{ij}$ and $ P_{kl}$, $i \neq k $ and $j \neq l$, are randomly selected for which is subtracted a fixed value calculated with the parameter $f$.
-    \item $f$: a ratio used to calculate the fixed value \textit{to be subtracted} from the maximum \textit{substractable} processing time. The maximum removable processing time corresponds to the minimum of the two randomly selected tasks $P_{ij}$ and $ P_{kl}$ (minus 1 to avoid creating tasks of length 0). A random value (between zero and the difference between \textit{substractable} and \textit{to be subtracted}) is also added to that fixed value.
+    
+    \item $p$: number of perturbations, such that for each perturbation, two task's processing times $P_{ij}$ and $ P_{kl}$, $i \neq k $ and $j \neq l$, are randomly selected from $P$, from which is subtracted the value of $v$.
+    
+    \item $f=\{f \in \mathbb{R} \mid 0<f<1\}$, such that:
+    \subitem $mv =  \max\{P_{ij},P_{kl}\}-1$ (subtract 1 to avoid tasks of length 0).      
+    \subitem $v = (f \cdot mv) + r $, with $r$: a random value between $0$ and $f \cdot mv$. 
 \end{itemize}
 
-The value subtracted from $P_{ij}$ and $P_{kl}$ is added to the $P_{il}$ and $P_{kj}$ to keep the sum of all rows equal to $k$.
+The value subtracted from $P_{ij}$ and $P_{kl}$ is added to $P_{il}$ and $P_{kj}$ to keep the sum of all rows equal to $k$.
+
 For numerous generated instances the parameters $k$, $p$ and $f$ are randomly generated as follows:
 
 \begin{itemize}
@@ -31,6 +38,8 @@ For numerous generated instances the parameters $k$, $p$ and $f$ are randomly ge
     \item $f$: random value between 0 and 1
 \end{itemize}
 
+
+Note that in the case of $n \neq m$, $k \mod m$ is added the diagonal of top-down square sub-matrices of size $\min\{n,m\}$ of $P$. The main diagonal is used on the remaining rectangle ensuring the sum of all rows of $P$ are equal to $k$. 
 
 \begin{thebibliography}{1}
     \bibitem{gp1999} Guéret, C., \& Prins, C. (1999). A new lower bound for the open-shop problem. Annals of Operations Research, 92, 165–183. https://doi.org/10.1023/A:1018930613891.

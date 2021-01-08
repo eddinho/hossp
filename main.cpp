@@ -52,6 +52,12 @@ namespace fs = boost::filesystem;
 
 std::pair<std::string, std::string> generateInstance(int i, int nb_jobs, int nb_machines, int k, int nb_perturbations, double fixed_percentage)
 {
+
+  // calculate the task index in ptime_arr
+  auto calTaskIdx = [&](int row_idx, int col_idx) {
+    return row_idx * nb_machines + col_idx;
+  };
+
   std::string logdir = "./log/";
   fs::create_directories(logdir);
 
@@ -71,24 +77,40 @@ std::pair<std::string, std::string> generateInstance(int i, int nb_jobs, int nb_
     nb_perturbations = static_cast<int>(random(nb_jobs * nb_jobs, nb_jobs * nb_jobs * nb_machines));
     fixed_percentage = (double)random(RAND_MAX) / (RAND_MAX);
   }
-  
-  // calculate the task index in ptime_arr
-  auto calTaskIdx = [&](int row_idx, int col_idx) 
-  {
-    return row_idx * nb_machines + col_idx;
-  };
 
-  // populate ptime_arr
-  for (int i = 0; i < nb_jobs; ++i)
+
+  // square problems
+  if(nb_jobs == nb_machines) 
   {
-    // sum of each row = k
-    for (int j = 0; j < nb_machines; ++j)
+    for (int i = 0; i < nb_jobs; ++i)
     {
-      ptime_arr[calTaskIdx(i, j)] = k / nb_jobs;
+      // sum of each row = k
+      for (int j = 0; j < nb_machines; ++j)
+      {
+        ptime_arr[calTaskIdx(i, j)] = k / nb_machines;
+      }
+      ptime_arr[calTaskIdx(i, i)] += k % (nb_machines);
     }
-    // except diagonal
-    if (i < nb_jobs and i < nb_machines)
-      ptime_arr[calTaskIdx(i, i)] += k % (nb_jobs);
+  }
+  // for rectangle problems, make sur that sum of all row is equal to k
+  // devide the rec into a square and add k mod m to a square sub matrix 
+  // at a time ensuring all sum of row elem is equal to k 
+  else 
+  {
+    int inc = 0;
+    // populate ptime_arr and apply the mod on the main diagonal
+    for (int i = 0; i < nb_jobs; ++i)
+    {
+      // sum of each row = k
+      for (int j = 0; j < nb_machines; ++j)
+      {
+        ptime_arr[calTaskIdx(i, j)] = k / nb_machines;
+        if (inc - i == j)
+          ptime_arr[calTaskIdx(i, j)] += k % (nb_machines);
+      }
+      if (i == inc)
+        inc += MIN(nb_jobs, nb_machines);;
+    }    
   }
 
   // perturbations to to ptime_arr
@@ -105,7 +127,7 @@ std::pair<std::string, std::string> generateInstance(int i, int nb_jobs, int nb_
     while (idx1 == idx3 or idx2 == idx4)
     {
       idx1 = static_cast<int>(random(0, nb_jobs - 1));
-      idx2 = static_cast<int>(random(0,  nb_machines - 1));
+      idx2 = static_cast<int>(random(0, nb_machines - 1));
       idx3 = static_cast<int>(random(0, nb_jobs - 1));
       idx4 = static_cast<int>(random(0, nb_machines - 1));
     }
@@ -118,9 +140,12 @@ std::pair<std::string, std::string> generateInstance(int i, int nb_jobs, int nb_
     const int removed = must_remove + static_cast<int>(random(0, removable - must_remove));
     // substract from the removed frmo the first two tasks
     ptime_arr[calTaskIdx(idx1, idx2)] -= removed;
+    ptime_arr[calTaskIdx(idx3, idx4)] -= removed;
+
     // add the amount removed from the two first tasks,
     // to keep all line sums equal to K
     ptime_arr[calTaskIdx(idx1, idx4)] += removed;
+    ptime_arr[calTaskIdx(idx3, idx2)] += removed;
   }
 
   // calculate the workload of the instance
