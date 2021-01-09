@@ -26,12 +26,32 @@ class Randomizer
 public:
   Randomizer()
   {
+    Randomizer(0);
+  }
+
+  Randomizer(long seed)
+  {
+    if(seed == 0)
+      setSeed(rand());
+    else
+      setSeed(seed);
+ 
     (*this)(0, RAND_MAX);
   }
 
-  double operator()(int min, int max, long seed = std::random_device{}())
+  void setSeed(long seed)
   {
-    setSeed(seed);
+    seed_ = seed;
+    gen_.seed(seed_);
+  }
+
+  long seed() const
+  {
+    return seed_;
+  }
+  
+  double operator()(int min, int max)
+  {
     distrib_ = std::uniform_int_distribution<int>(min, max);
     return (*this)();
   }
@@ -45,12 +65,8 @@ public:
   {
     return distrib_(gen_);
   }
-
-  void setSeed(long seed)
-  {
-    gen_.seed(seed);
-  }
 private:
   std::mt19937 gen_;
   std::uniform_int_distribution<int> distrib_ ;
+  long seed_;
 };

@@ -37,14 +37,14 @@ Usage:
   hossp [OPTION...]
 
   -h, --help          This help message and exit
-  -k arg              the k value (default: 0)
+  -k arg              the k value, =rand(n*m,n*m*100) if 0 (default: 0)
   -o, --out           Enable stdout
   -d, --dir arg       Output directory (default: "")
   -n, --jobs arg      number of jobs (default: 4)
   -m, --machines arg  number of machines (default: 4)
-  -f, --fix arg       fixed percentage (default: 0)
-  -p, --pert arg      number of perturbations (default: 0)
-  -s, --seed arg      random seed (default: 4294967)
+  -f, --fix arg       fixed percentage, =rand(0,1) if 0 (default: 0)
+  -p, --pert arg      number of perturbations, =rand(n*m,n*m^2) if 0 (default: 0)
+  -s, --seed arg      random seed, =rand if 0 (default: 0)
   -g, --generate arg  number of instances to generate (default: 1)
 ```
 

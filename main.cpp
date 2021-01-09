@@ -50,7 +50,7 @@ namespace fs = boost::filesystem;
 #define MAX(a, b) (((a) > (b)) ? (a) : (b))
 #endif
 
-std::pair<std::string, std::string> generateInstance(int i, int nb_jobs, int nb_machines, int k, int nb_perturbations, double fixed_percentage)
+std::pair<std::string, std::string> generateInstance(int i, int nb_jobs, int nb_machines, int k, int nb_perturbations, double fixed_percentage, long seed)
 {
 
   // calculate the task index in ptime_arr
@@ -62,7 +62,7 @@ std::pair<std::string, std::string> generateInstance(int i, int nb_jobs, int nb_
   fs::create_directories(logdir);
 
   std::vector<int> ptime_arr(nb_jobs * nb_machines);
-  Randomizer random;
+  Randomizer random(seed);
 
   float workload = 0.0;
   bool is_random_hard = false;
@@ -204,6 +204,8 @@ std::pair<std::string, std::string> generateInstance(int i, int nb_jobs, int nb_
   ss_instance << "// k = " << k
               << ", pert = " << nb_perturbations
               << ", fix = " << fixed_percentage
+              << ", seed = " << random.seed()
+              << ", lb = " << lower_bound
               << ", workload = " << workload
               << "\n";
 
@@ -227,14 +229,14 @@ int main(int argc, char **argv)
   {
     cxxopts::Options option("hossp", "hossp: Generate hard random instances of the open shop problem");
     option.add_options()("h,help", "This help message and exit")
-                        ("k", "the k value", cxxopts::value<int>()->default_value("0"))
+                        ("k", "the k value, =rand(n*m,n*m*100) if 0", cxxopts::value<int>()->default_value("0"))
                         ("o,out", "Enable stdout", cxxopts::value<bool>()->default_value("false"))
                         ("d,dir", "Output directory", cxxopts::value<std::string>()->default_value(""))
                         ("n,jobs", "number of jobs", cxxopts::value<int>()->default_value("4"))
                         ("m,machines", "number of machines", cxxopts::value<int>()->default_value("4"))
-                        ("f,fix", "fixed percentage", cxxopts::value<double>()->default_value("0"))
-                        ("p,pert", "number of perturbations", cxxopts::value<int>()->default_value("0"))
-                        ("s,seed", "random seed", cxxopts::value<long>()->default_value("4294967"))
+                        ("f,fix", "fixed percentage, =rand(0,1) if 0", cxxopts::value<double>()->default_value("0"))
+                        ("p,pert", "number of perturbations, =rand(n*m,n*m^2) if 0", cxxopts::value<int>()->default_value("0"))
+                        ("s,seed", "random seed, =rand if 0", cxxopts::value<long>()->default_value("0"))
                         ("g,generate", "number of instances to generate", cxxopts::value<int>()->default_value("1"))
                         ;
 
@@ -261,17 +263,17 @@ int main(int argc, char **argv)
     }
     if (option_parse["pert"].as<int>() < 0)
     {
-      std::cerr << "Error: option pert must be > 0" << std::endl;
+      std::cerr << "Error: option pert must be >= 0" << std::endl;
       exit(1);
     }
-    if (option_parse["fix"].as<double>() < 0 or option_parse["fix"].as<double>() >= 1)
+    if (option_parse["fix"].as<double>() < 0 or option_parse["fix"].as<double>() > 1)
     {
-      std::cerr << "Error: option fix must be > 0.0 and < 1.0" << std::endl;
+      std::cerr << "Error: option fix must be >= 0.0 and <= 1.0" << std::endl;
       exit(1);
     }
     if (option_parse["k"].as<int>() < 0)
     {
-      std::cerr << "Error: option k must be > 0" << std::endl;
+      std::cerr << "Error: option k must be >= 0" << std::endl;
       exit(1);
     }
     if (option_parse["g"].as<int>() <= 0)
@@ -279,6 +281,13 @@ int main(int argc, char **argv)
       std::cerr << "Error: option generate must be > 0" << std::endl;
       exit(1);
     }
+
+    if (option_parse["seed"].as<long>() < 0)
+    {
+      std::cerr << "Error: option seed must be >= 0" << std::endl;
+      exit(1);
+    }
+
 
     bool is_stdout = option_parse["out"].as<bool>();
     std::string out_dir = option_parse["dir"].as<std::string>();
@@ -288,11 +297,12 @@ int main(int argc, char **argv)
     double fixed_percentage = option_parse["fix"].as<double>();
     int k = option_parse["k"].as<int>();
     int nb_instances = option_parse["g"].as<int>();
+    int seed = option_parse["seed"].as<long>();
 
     for (int i = 0; i < nb_instances; ++i)
     {
 
-      const std::pair<std::string, std::string> instance = generateInstance(i, nb_jobs, nb_machines, k, nb_perturbations, fixed_percentage);
+      const std::pair<std::string, std::string> instance = generateInstance(i, nb_jobs, nb_machines, k, nb_perturbations, fixed_percentage, seed);
 
       if (is_stdout)
         std::cout << instance.second;
