@@ -1,7 +1,7 @@
 # A Hard Open Shop Scheduling Problems Generator
 A random generator of hard open shop scheduling problems based on Guéret and Prins (1999).
 
-Read more [here](./doc/hossp.pdf)
+[Read more](./doc/hossp.pdf).
 
 ## Installation
 
@@ -37,61 +37,36 @@ Usage:
   hossp [OPTION...]
 
   -h, --help          This help message and exit
-  -k arg              the k value, =rand(n*m,n*m*100) if 0 (default: 0)
-  -o, --out           Enable stdout
-  -d, --dir arg       Output directory (default: "")
   -n, --jobs arg      number of jobs (default: 4)
   -m, --machines arg  number of machines (default: 4)
+  -k arg              the k value, =rand(n*m,n*m*100) if 0 (default: 0)
   -f, --fix arg       fixed percentage, =rand(0,1) if 0 (default: 0)
   -p, --pert arg      number of perturbations, =rand(n*m,n*m^2) if 0 (default: 0)
-  -s, --seed arg      random seed, =rand if 0 (default: 0)
   -g, --generate arg  number of instances to generate (default: 1)
+  -o, --out           Enable stdout
+  -d, --dir arg       Output directory (default: "")
 ```
 
 The following command generates 5 random instances, of 5 jobs and 5 machines and outputs the instances to stdout (-o).
 
 ```bash
-./build/bin/hossp.exe -n 5 -m 5 -g 5 -o
+./build/bin/hossp.exe -n 5 -m 5 -g 2 -o
 
-// k = 1088, pert = 51, fix = 0.25%
+// k = 491, pert = 83, fix = 0.627064, seed = 634927729, lb = 491
 5 5
-18 371 405 264 30
-164 265 116 518 25
-331 261 138 277 81
-263 388 281 104 52
-40 426 393 151 78
+11 249 153 3 75
+222 13 212 35 9
+2 14 118 231 126
+1 173 5 187 125
+255 42 3 35 156
 
-// k = 1218, pert = 67, fix = 0.143376%
+// k = 644, pert = 82, fix = 0.0872524, seed = 931827985, lb = 644
 5 5
-32 280 229 628 49
-226 206 324 221 241
-164 498 167 228 161
-407 90 102 601 18
-284 7 312 581 34
-
-// k = 2145, pert = 48, fix = 0.25%
-5 5
-301 184 29 311 1320
-237 28 118 813 949
-127 381 411 1022 204
-140 150 727 219 909
-136 309 365 551 784
-
-// k = 186, pert = 48, fix = 0.15714%
-5 5
-99 2 6 55 24
-89 50 32 12 3
-47 1 55 42 41
-65 28 6 46 41
-29 27 34 40 56
-
-// k = 1975, pert = 59, fix = 0.309732%
-5 5
-872 225 652 210 16
-277 120 1483 45 50
-632 235 531 11 566
-843 32 1086 3 11
-914 2 737 170 152
+151 86 368 12 27
+65 176 267 39 97
+266 1 5 251 121
+91 1 2 341 209
+71 380 2 1 190
 ```
 
 ## Reference

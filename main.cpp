@@ -232,15 +232,15 @@ int main(int argc, char **argv)
   {
     cxxopts::Options option("hossp", "hossp: Generate hard random instances of the open shop problem");
     option.add_options()("h,help", "This help message and exit")
-                        ("k", "the k value, =rand(n*m,n*m*100) if 0", cxxopts::value<int>()->default_value("0"))
-                        ("o,out", "Enable stdout", cxxopts::value<bool>()->default_value("false"))
-                        ("d,dir", "Output directory", cxxopts::value<std::string>()->default_value(""))
                         ("n,jobs", "number of jobs", cxxopts::value<int>()->default_value("4"))
                         ("m,machines", "number of machines", cxxopts::value<int>()->default_value("4"))
+                        ("k", "the k value, =rand(n*m,n*m*100) if 0", cxxopts::value<int>()->default_value("0"))                     
                         ("f,fix", "fixed percentage, =rand(0,1) if 0", cxxopts::value<double>()->default_value("0"))
                         ("p,pert", "number of perturbations, =rand(n*m,n*m^2) if 0", cxxopts::value<int>()->default_value("0"))
+                        ("g,generate", "number of instances to generate", cxxopts::value<int>()->default_value("1"))                        
+                        ("o,out", "Enable stdout", cxxopts::value<bool>()->default_value("false"))
+                        ("d,dir", "Output directory", cxxopts::value<std::string>()->default_value(""))                           
                         ("s,seed", "random seed, =rand if 0", cxxopts::value<long>()->default_value("0"))
-                        ("g,generate", "number of instances to generate", cxxopts::value<int>()->default_value("1"))
                         ;
 
     if (argc == 1)
