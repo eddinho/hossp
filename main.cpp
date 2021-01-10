@@ -186,16 +186,19 @@ std::pair<std::string, std::string> generateInstance(int i, int nb_jobs, int nb_
   out.open(filename, std::ofstream::out | std::ofstream::app);
   if (out.is_open())
   {
-
     out << ss_name.str()
-        << ","
-        << workload
         << ","
         << k
         << ","
         << nb_perturbations
         << ","
         << fixed_percentage
+        << ","
+        << random.seed()        
+        << ","
+        << lower_bound
+        << ","
+        << workload                
         << "\n";
   }
   out.close();
