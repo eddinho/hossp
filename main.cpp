@@ -288,6 +288,13 @@ int main(int argc, char **argv)
       exit(1);
     }
 
+    if (option_parse["g"].as<int>() > 1 and option_parse["seed"].as<long>() > 0)
+    {
+      std::cerr << "Error: cannot define a random seed to generate multiple instances." << std::endl;
+      exit(1);
+    }
+
+
 
     bool is_stdout = option_parse["out"].as<bool>();
     std::string out_dir = option_parse["dir"].as<std::string>();

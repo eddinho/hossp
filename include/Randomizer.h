@@ -32,7 +32,7 @@ public:
   Randomizer(long seed)
   {
     if(seed == 0)
-      setSeed(rand());
+      setSeed(std::random_device{}());
     else
       setSeed(seed);
  
@@ -49,7 +49,7 @@ public:
   {
     return seed_;
   }
-  
+
   double operator()(int min, int max)
   {
     distrib_ = std::uniform_int_distribution<int>(min, max);
