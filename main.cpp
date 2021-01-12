@@ -109,7 +109,7 @@ std::pair<std::string, std::string> generateInstance(int i, int nb_jobs, int nb_
           ptime_arr[calTaskIdx(i, j)] += k % (nb_machines);
       }
       if (i == inc)
-        inc += MIN(nb_jobs, nb_machines);;
+        inc += MIN(nb_jobs, nb_machines);
     }    
   }
 
