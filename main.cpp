@@ -78,9 +78,8 @@ std::pair<std::string, std::string> generateInstance(int i, int nb_jobs, int nb_
     fixed_percentage = (double)random(RAND_MAX) / (RAND_MAX);
   }
 
-
   // square problems
-  if(nb_jobs == nb_machines /*or nb_jobs < nb_machines*/) 
+  if (nb_jobs == nb_machines /*or nb_jobs < nb_machines*/)
   {
     for (int i = 0; i < nb_jobs; ++i)
     {
@@ -93,28 +92,28 @@ std::pair<std::string, std::string> generateInstance(int i, int nb_jobs, int nb_
     }
   }
   // for rectangle problems, make sur that sum of all row is equal to k
-  // devide the rec into a square and add k mod m to a square sub matrix 
-  // at a time ensuring all sum of row elem is equal to k 
-  else 
+  // devide the rec into a square and add k mod m to a square sub matrix
+  // at a time ensuring all sum of row elem is equal to k
+  else
   {
     int inc = 0;
-    int min = MIN(nb_jobs,nb_machines);
+    int min = MIN(nb_jobs, nb_machines);
     // populate ptime_arr and apply the mod on the main diagonal
     for (int i = 0; i < nb_jobs; ++i)
-    {     
-      if(inc == min)
-        inc=0;       
+    {
+      if (inc == min)
+        inc = 0;
       // sum of each row = k
       for (int j = 0; j < nb_machines; ++j)
       {
-        ptime_arr[calTaskIdx(i, j)] = int(floor(k / nb_machines));    
-      if( i>=min and j==inc )
-        ptime_arr[calTaskIdx(i,j)] += k % (nb_machines);              
+        ptime_arr[calTaskIdx(i, j)] = int(floor(k / nb_machines));
+        if (i >= min and j == inc)
+          ptime_arr[calTaskIdx(i, j)] += k % (nb_machines);
       }
-      if(i < min)   
-        ptime_arr[calTaskIdx(i,i)] += k % (nb_machines);      
+      if (i < min)
+        ptime_arr[calTaskIdx(i, i)] += k % (nb_machines);
       inc++;
-    }     
+    }
   }
 
   // perturbations to to ptime_arr
@@ -198,11 +197,11 @@ std::pair<std::string, std::string> generateInstance(int i, int nb_jobs, int nb_
         << ","
         << fixed_percentage
         << ","
-        << random.seed()        
+        << random.seed()
         << ","
         << lower_bound
         << ","
-        << workload                
+        << workload
         << "\n";
   }
   out.close();
@@ -301,8 +300,6 @@ int main(int argc, char **argv)
       exit(1);
     }
 
-
-
     bool is_stdout = option_parse["out"].as<bool>();
     std::string out_dir = option_parse["dir"].as<std::string>();
     int nb_jobs = option_parse["jobs"].as<int>();
@@ -332,7 +329,7 @@ int main(int argc, char **argv)
         }
         else
         {
-          std::cerr << "Error: cannot create file " << file_name << std::endl;          
+          std::cerr << "Error: cannot create file " << file_name << std::endl;
           exit(1);
         }
       }
