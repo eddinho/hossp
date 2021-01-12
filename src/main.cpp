@@ -176,12 +176,10 @@ std::pair<std::string, std::string> generateInstance(int i, int nb_jobs, int nb_
 
   // create an instance name
   std::stringstream ss_name;
-  ss_name << "rand_"
+  ss_name << "hossp_"
           << std::setfill('0') << std::setw(2) << nb_jobs
           << "_"
-          << std::setfill('0') << std::setw(2) << nb_machines
-          << "_"
-          << std::setfill('0') << std::setw(2) << i;
+          << std::setfill('0') << std::setw(2) << nb_machines;
 
   // print instance statistics
   std::ofstream out;
@@ -235,8 +233,8 @@ int main(int argc, char **argv)
   {
     cxxopts::Options option("hossp", "hossp: Generate hard random instances of the open shop problem");
     option.add_options()("h,help", "This help message and exit")
-                        ("n,jobs", "number of jobs", cxxopts::value<int>()->default_value("4"))
-                        ("m,machines", "number of machines", cxxopts::value<int>()->default_value("4"))
+                        ("n,jobs", "number of jobs", cxxopts::value<int>()->default_value("0"))
+                        ("m,machines", "number of machines", cxxopts::value<int>()->default_value("0"))
                         ("k", "the k value, =rand(n*m,n*m*100) if 0", cxxopts::value<int>()->default_value("0"))                     
                         ("f,fix", "fixed percentage, =rand(0,1) if 0", cxxopts::value<double>()->default_value("0"))
                         ("p,pert", "number of perturbations, =rand(n*m,n*m^2) if 0", cxxopts::value<int>()->default_value("0"))
@@ -266,7 +264,7 @@ int main(int argc, char **argv)
     {
       std::cerr << "Error: option machines must be > 0" << std::endl;
       exit(1);
-    }
+    }    
     if (option_parse["pert"].as<int>() < 0)
     {
       std::cerr << "Error: option pert must be >= 0" << std::endl;
@@ -302,11 +300,14 @@ int main(int argc, char **argv)
 
     bool is_stdout = option_parse["out"].as<bool>();
     std::string out_dir = option_parse["dir"].as<std::string>();
+
     int nb_jobs = option_parse["jobs"].as<int>();
     int nb_machines = option_parse["machines"].as<int>();
+
+    int k = option_parse["k"].as<int>();
     int nb_perturbations = option_parse["pert"].as<int>();
     double fixed_percentage = option_parse["fix"].as<double>();
-    int k = option_parse["k"].as<int>();
+    
     int nb_instances = option_parse["g"].as<int>();
     int seed = option_parse["seed"].as<long>();
 
@@ -319,9 +320,20 @@ int main(int argc, char **argv)
         std::cout << instance.second;
       if (not(is_stdout and out_dir.empty()))
       {
-        std::string file_name = out_dir + instance.first + ".txt";
+        // renumber instances according to existing instances
+        std::stringstream file_name_ss;
+        int num = i+1;
+        file_name_ss <<  out_dir << instance.first <<  "_" << std::setfill('0') << std::setw(2) << num << ".txt";
+        while(fs::exists(file_name_ss.str()))
+        {
+          num++;
+          file_name_ss.clear();
+          file_name_ss.str(std::string());
+          file_name_ss <<  out_dir << instance.first <<  "_" << std::setfill('0') << std::setw(2) << num << ".txt";
+        }
+
         std::ofstream trc_file;
-        trc_file.open(file_name, std::ofstream::out);
+        trc_file.open(file_name_ss.str(), std::ofstream::out);
         if (trc_file.is_open())
         {
           trc_file << instance.second;
@@ -329,7 +341,7 @@ int main(int argc, char **argv)
         }
         else
         {
-          std::cerr << "Error: cannot create file " << file_name << std::endl;
+          std::cerr << "Error: cannot create file " << file_name_ss.str() << std::endl;
           exit(1);
         }
       }

@@ -28,6 +28,6 @@ include_directories("${PROJECT_SOURCE_DIR}"
                     "${PROJECT_SOURCE_DIR}/include"
                     "${PROJECT_SOURCE_DIR}/rv2d/include"
                     )
-set(SOURCE main.cpp)
+set(SOURCE src/main.cpp)
 
 add_executable(${PROJECT_NAME} ${SOURCE})
