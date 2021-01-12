@@ -80,7 +80,7 @@ std::pair<std::string, std::string> generateInstance(int i, int nb_jobs, int nb_
 
 
   // square problems
-  if(nb_jobs == nb_machines) 
+  if(nb_jobs == nb_machines /*or nb_jobs < nb_machines*/) 
   {
     for (int i = 0; i < nb_jobs; ++i)
     {
@@ -98,19 +98,23 @@ std::pair<std::string, std::string> generateInstance(int i, int nb_jobs, int nb_
   else 
   {
     int inc = 0;
+    int min = MIN(nb_jobs,nb_machines);
     // populate ptime_arr and apply the mod on the main diagonal
     for (int i = 0; i < nb_jobs; ++i)
-    {
+    {     
+      if(inc == min)
+        inc=0;       
       // sum of each row = k
       for (int j = 0; j < nb_machines; ++j)
       {
-        ptime_arr[calTaskIdx(i, j)] = int(floor(k / nb_machines));
-        if (inc - i == j)
-          ptime_arr[calTaskIdx(i, j)] += k % (nb_machines);
+        ptime_arr[calTaskIdx(i, j)] = int(floor(k / nb_machines));    
+      if( i>=min and j==inc )
+        ptime_arr[calTaskIdx(i,j)] += k % (nb_machines);              
       }
-      if (i == inc)
-        inc += MIN(nb_jobs, nb_machines);
-    }    
+      if(i < min)   
+        ptime_arr[calTaskIdx(i,i)] += k % (nb_machines);      
+      inc++;
+    }     
   }
 
   // perturbations to to ptime_arr
