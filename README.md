@@ -1,4 +1,5 @@
-[![main](https://github.com/eddinho/hossp/actions/workflows/main.yml/badge.svg)](https://github.com/eddinho/hossp/actions/workflows/main.yml)
+[![Build Status](https://github.com/eddinho/hossp/actions/workflows/build.yml/badge.svg)](https://github.com/eddinho/hossp/actions?query=workflow%3ABuild)
+
 
 # A Hard Open Shop Scheduling Problems Generator
 A random generator of hard open shop scheduling problems based on Guéret and Prins (1999).
