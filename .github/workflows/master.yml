@@ -16,21 +16,25 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        config:
+        config:  
         - {
-            name: "Windows Latest MSVC", artifact: "Hossp-Windows-MSVC.7z",
+            name: "Windows Latest MSVC", 
+            artifact: "Hossp-Windows-MSVC.7z",
             os: windows-latest,
+            build_type: "Release",
             cc: "cl", cxx: "cl",
             environment_script: "C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/Auxiliary/Build/vcvars64.bat"
           }
         - {
-            name: "Ubuntu Latest GCC", artifact: "Hossp-Linux.7z",
+            name: "Ubuntu Latest GCC", 
+            artifact: "Hossp-Linux.7z",
             os: ubuntu-latest,
             cpp-version: gcc-9,
             cc: "gcc", cxx: "g++"
           }
         - {
-            name: "macOS Latest Clang", artifact: "Hossp-macOS.7z",
+            name: "macOS Latest Clang", 
+            artifact: "Hossp-macOS.7z",
             os: macos-latest,
             cc: "clang", cxx: "clang++"
           }
@@ -218,7 +222,7 @@ jobs:
       
     - name: Pack
       working-directory: instdir
-      run: ${{ steps.cmake_and_ninja.outputs.cmake_dir }}/cmake -E tar cJfv ../${{ matrix.config.artifact }} --format=7zip .      
+      run: cmake -E tar cJfv ../${{ matrix.config.artifact }} --format=7zip .      
 
     - name: Upload
       uses: actions/upload-artifact@v1
@@ -261,15 +265,18 @@ jobs:
       matrix:
         config:
         - {
-            name: "Windows Latest MSVC", artifact: "Hossp-Windows-MSVC.7z",
+            name: "Windows Latest MSVC", 
+            artifact: "Hossp-Windows-MSVC.7z",
             os: ubuntu-latest
           }
         - {
-            name: "Ubuntu Latest GCC", artifact: "Hossp-Linux.7z",
+            name: "Ubuntu Latest GCC", 
+            artifact: "Hossp-Linux.7z",
             os: ubuntu-latest
           }
         - {
-            name: "macOS Latest Clang", artifact: "Hossp-macOS.7z",
+            name: "macOS Latest Clang", 
+            artifact: "Hossp-macOS.7z",
             os: ubuntu-latest
           }
     needs: release
