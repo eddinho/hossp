@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2020 S.E. B.
+Copyright (c) 2020 Salah Eddine Bouterfif
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -50,21 +50,20 @@ namespace fs = boost::filesystem;
 #define MAX(a, b) (((a) > (b)) ? (a) : (b))
 #endif
 
-std::pair<std::string, std::string> generateInstance(int i, int nb_jobs, int nb_machines, int k, int nb_perturbations, double fixed_percentage, long seed)
+std::pair<std::string, std::string> generateInstance(int i, int nb_jobs, int nb_machines, int &k, int &nb_perturbations, double &fixed_percentage, long &seed, int &lower_bound, float &workload)
 {
 
   // calculate the task index in ptime_arr
-  auto calTaskIdx = [&](int row_idx, int col_idx) {
+  auto calTaskIdx = [&](int row_idx, int col_idx)
+  {
     return row_idx * nb_machines + col_idx;
   };
 
-  std::string logdir = "./log/";
-  fs::create_directories(logdir);
-
   std::vector<int> ptime_arr(nb_jobs * nb_machines);
   Randomizer random(seed);
-
-  float workload = 0.0;
+  seed = random.seed();
+  workload = 0.0;
+  lower_bound = 0;
   bool is_random_hard = false;
 
   if (k == 0 or nb_perturbations == 0 or fixed_percentage == 0)
@@ -116,6 +115,10 @@ std::pair<std::string, std::string> generateInstance(int i, int nb_jobs, int nb_
     }
   }
 
+  std::stringstream ss_instance;
+  std::stringstream ss_name;
+  ss_name.str("");
+  ss_instance.str("");
   // perturbations to to ptime_arr
   for (int i = 0; i < nb_perturbations; ++i)
   {
@@ -126,7 +129,7 @@ std::pair<std::string, std::string> generateInstance(int i, int nb_jobs, int nb_
     int idx3 = 0;
     int idx4 = 0;
 
-    // select randomly 2 taks randomely
+    // select 2 different taks randomely
     while (idx1 == idx3 or idx2 == idx4)
     {
       idx1 = static_cast<int>(random(0, nb_jobs - 1));
@@ -139,7 +142,7 @@ std::pair<std::string, std::string> generateInstance(int i, int nb_jobs, int nb_
     const int removable = MIN(ptime_arr[calTaskIdx(idx1, idx2)], ptime_arr[calTaskIdx(idx3, idx4)]) - 1;
     // fixed part that must be removed
     const int must_remove = static_cast<int>(trunc(removable * fixed_percentage));
-    // randomely duration to be remove
+    // random duration to be remove
     const int removed = must_remove + static_cast<int>(random(0, removable - must_remove));
     // substract from the removed frmo the first two tasks
     ptime_arr[calTaskIdx(idx1, idx2)] -= removed;
@@ -154,7 +157,6 @@ std::pair<std::string, std::string> generateInstance(int i, int nb_jobs, int nb_
   // calculate the workload of the instance
   // classical lower bound
   std::vector<int> machine(nb_machines);
-  float lower_bound = 0;
   float pttot = 0;
   for (int i = 0; i < nb_jobs; i++)
   {
@@ -175,36 +177,12 @@ std::pair<std::string, std::string> generateInstance(int i, int nb_jobs, int nb_
   workload = float((pttot / (nb_machines * lower_bound)));
 
   // create an instance name
-  std::stringstream ss_name;
+  int num = i + 1;
   ss_name << "hossp_"
           << std::setfill('0') << std::setw(2) << nb_jobs
           << "_"
           << std::setfill('0') << std::setw(2) << nb_machines;
 
-  // print instance statistics
-  std::ofstream out;
-  std::string filename = logdir + "/stats.txt";
-  out.open(filename, std::ofstream::out | std::ofstream::app);
-  if (out.is_open())
-  {
-    out << ss_name.str()
-        << ","
-        << k
-        << ","
-        << nb_perturbations
-        << ","
-        << fixed_percentage
-        << ","
-        << random.seed()
-        << ","
-        << lower_bound
-        << ","
-        << workload
-        << "\n";
-  }
-  out.close();
-
-  std::stringstream ss_instance;
   ss_instance << "// k = " << k
               << ", pert = " << nb_perturbations
               << ", fix = " << fixed_percentage
@@ -235,13 +213,13 @@ int main(int argc, char **argv)
     option.add_options()("h,help", "This help message and exit")
                         ("n,jobs", "number of jobs", cxxopts::value<int>()->default_value("0"))
                         ("m,machines", "number of machines", cxxopts::value<int>()->default_value("0"))
-                        ("k", "the k value, =rand(n*m,n*m*100) if 0", cxxopts::value<int>()->default_value("0"))                     
+                        ("k", "the k value, =rand(n*m,n*m*100) if 0", cxxopts::value<int>()->default_value("0"))
                         ("f,fix", "fixed percentage, =rand(0,1) if 0", cxxopts::value<double>()->default_value("0"))
                         ("p,pert", "number of perturbations, =rand(n*m,n*m^2) if 0", cxxopts::value<int>()->default_value("0"))
-                        ("g,generate", "number of instances to generate", cxxopts::value<int>()->default_value("1"))                        
+                        ("g,generate", "number of instances to generate", cxxopts::value<int>()->default_value("1"))
                         ("o,out", "Enable stdout", cxxopts::value<bool>()->default_value("false"))
-                        ("d,dir", "Output directory", cxxopts::value<std::string>()->default_value(""))                           
-                        ("s,seed", "random seed, =rand if 0", cxxopts::value<long>()->default_value("0"))
+                        ("d,dir", "Output directory", cxxopts::value<std::string>()->default_value(""))
+                        ("s,seed", "random seed.", cxxopts::value<long>()->default_value("0"))
                         ;
 
     if (argc == 1)
@@ -264,7 +242,7 @@ int main(int argc, char **argv)
     {
       std::cerr << "Error: option machines must be > 0" << std::endl;
       exit(1);
-    }    
+    }
     if (option_parse["pert"].as<int>() < 0)
     {
       std::cerr << "Error: option pert must be >= 0" << std::endl;
@@ -307,45 +285,79 @@ int main(int argc, char **argv)
     int k = option_parse["k"].as<int>();
     int nb_perturbations = option_parse["pert"].as<int>();
     double fixed_percentage = option_parse["fix"].as<double>();
-    
-    int nb_instances = option_parse["g"].as<int>();
-    int seed = option_parse["seed"].as<long>();
 
+    int nb_instances = option_parse["g"].as<int>();
+    long seed = option_parse["seed"].as<long>();
+
+    // print instance statistics
+    std::string logdir = "./log/";
+    fs::create_directories(logdir);
+    std::ofstream out_stats;
+    std::string stats_filename = logdir + "stats.txt";
+    out_stats.open(stats_filename, std::ofstream::out | std::ofstream::app);
     for (int i = 0; i < nb_instances; ++i)
     {
+      float workload = 0.0;
+      int lower_bound = 0;
 
-      const std::pair<std::string, std::string> instance = generateInstance(i, nb_jobs, nb_machines, k, nb_perturbations, fixed_percentage, seed);
+      const std::pair<std::string, std::string> instance = generateInstance(i, nb_jobs, nb_machines, k, nb_perturbations, fixed_percentage, seed, lower_bound, workload);
 
       if (is_stdout)
         std::cout << instance.second;
       if (not(is_stdout and out_dir.empty()))
       {
         // renumber instances according to existing instances
-        std::stringstream file_name_ss;
-        int num = i+1;
-        file_name_ss <<  out_dir << instance.first <<  "_" << std::setfill('0') << std::setw(2) << num << ".txt";
-        while(fs::exists(file_name_ss.str()))
+        std::stringstream instance_filename_ss;
+        int num = i + 1;
+        instance_filename_ss << out_dir << instance.first << "_" << std::setfill('0') << std::setw(2) << num << ".txt";
+
+        while (fs::exists(instance_filename_ss.str()))
         {
           num++;
-          file_name_ss.clear();
-          file_name_ss.str(std::string());
-          file_name_ss <<  out_dir << instance.first <<  "_" << std::setfill('0') << std::setw(2) << num << ".txt";
+          instance_filename_ss.clear();
+          instance_filename_ss.str(std::string());
+          instance_filename_ss << out_dir << instance.first << "_" << std::setfill('0') << std::setw(2) << num << ".txt";
         }
 
-        std::ofstream trc_file;
-        trc_file.open(file_name_ss.str(), std::ofstream::out);
-        if (trc_file.is_open())
+        // print stats on created instance
+        if (out_stats.is_open())
         {
-          trc_file << instance.second;
-          trc_file.close();
+          out_stats << instance.first << "_" << std::setfill('0') << std::setw(2) << num
+                    << ","
+                    << k
+                    << ","
+                    << nb_perturbations
+                    << ","
+                    << fixed_percentage
+                    << ","
+                    << seed
+                    << ","
+                    << lower_bound
+                    << ","
+                    << workload
+                    << "\n";
         }
         else
         {
-          std::cerr << "Error: cannot create file " << file_name_ss.str() << std::endl;
-          exit(1);
+          std::cerr << "Error: cannot open file " << stats_filename << std::endl;
+        }
+
+        // print the instance to a text file
+        std::ofstream instance_file;
+        instance_file.open(instance_filename_ss.str(), std::ofstream::out);
+        if (instance_file.is_open())
+        {
+          instance_file << instance.second;
+          instance_file.close();
         }
       }
+      // reset seed 
+      seed = 0;
+      nb_perturbations = 0;
+      fixed_percentage = 0;
     }
+
+    out_stats.close();
   }
   catch (const std::exception &e)
   {

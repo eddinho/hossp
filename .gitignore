@@ -9,6 +9,8 @@
 # latex compile files
 *.aux
 *.bbl
+*.loc
+*.soc
 *.blg
 *.fdb_latexmk
 *.fls
@@ -16,9 +18,9 @@
 *.synctex.gz
 #ossp files
 *.gph
-*.dat
+#*.dat
 #pytorch model
-*.pt
+#*.pt
 #csv stats file
 *.csv
 # User-specific files (MonoDevelop/Xamarin Studio)
@@ -41,27 +43,34 @@ bld/
 libtorch/
 # Visual Studio 2015 cache/options directory
 .vs/
-.vscode/
+
 # Uncomment if you have tasks that create the project's static files in wwwroot
 #wwwroot/
 
 # Tensorboard
-runs/
-runs_old/
+[Rr]uns/
 
-#output file
-output/
+#output folder
+[Oo]utput/
+[Ll]og/
+[Tt]race/
+[Mm]isc/
 
 # python
 __pycache__/
-
-#log
-log/
-
+__init__.py
+.ipynb_checkpoints/
 # VS Code
-#.vscode/
+.vscode/
 .history/
 CMakeFiles/
+
+#py version of the script
+submit.sh
+config.json
+
+#misc
+.data/
 
 # Valgrind
 .outenv
@@ -92,15 +101,6 @@ artifacts/
 *.sor
 *.sou
 *.sol
-*.st1
-*.st2
-*.st3
-*.st4
-*.st5
-*.st6
-*.st7
-*.st8
-*.st9
 *.bas
 *.7z
 *.zip
@@ -113,9 +113,6 @@ artifacts/
 *.mps
 *.add
 *.bak
-#*_i.c
-#*_p.c
-#*_i.h
 *.ilk
 *.meta
 *.obj
@@ -137,6 +134,7 @@ artifacts/
 *.pidb
 *.svclog
 *.scc
+*.stackdump
 
 # Chutzpah Test files
 _Chutzpah*

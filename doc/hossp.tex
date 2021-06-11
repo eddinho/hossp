@@ -1,22 +1,134 @@
-\documentclass[fleqn,10pt]{article}
-\usepackage{amsmath}
+\documentclass[11pt]{article}
+
+\textwidth 165mm \textheight 230mm \topmargin -5mm
+\oddsidemargin 0mm
+
+% nicer text finish
+%\usepackage{kantlipsum}
+\usepackage{url}
+\usepackage{tgpagella}
+\usepackage{microtype}
+
+% multiple figures
+\usepackage[tableposition=top]{caption}
+\usepackage{subcaption}
+
+%\usepackage{graphicx,xcolor}
+
+\usepackage{xcolor}
+\usepackage[color=gray!50]{background}
+
+%Excel2Table
+\usepackage{multirow}
+
+%keep figures in place with H
+\usepackage{float}
+
+% for highlighting changes
+\usepackage{changes}
+
+% clickable citations
+%\usepackage{hyperref}
+% activate to hide links
+%\usepackage[hidelinks]{hyperref}
+\usepackage{authblk}            
+\renewcommand\Affilfont{\fontsize{8.7}{10.8}\itshape}
+\newcommand\CorresAuth{\footnotemark[\arabic{footnote}]}
+\renewcommand*{\Authands}{, }
+\newcommand{\email}[1]{\texttt{\small #1}}
+
+%for bottomrule and tablenote
+\usepackage{booktabs}
+\usepackage{amstext}
 \usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{babel} 
 
-% type user-defined commands here
+% silence font warning 
+\usepackage{textcomp}
 
-\title{Hard random instances generator for the open shop scheduling problem}   % type title between braces
-%\author{Tom Scavo}         % type author(s) between braces
+\usepackage{algorithm,algpseudocode}
+\algnewcommand{\algorithmicforeach}{\textbf{for each}}
+\algdef{SE}[FOR]{ForAll}{EndForAll}[1]
+  {\algorithmicforall\ #1\ \algorithmicdo}% \ForEach{#1}
+  {\algorithmicend\ \algorithmicforall}% \EndForEach
+  \algdef{SE}[FOR]{ForEach}{EndForEach}[1]
+  {\algorithmicforeach\ #1\ \algorithmicdo}% \ForEach{#1}
+  {\algorithmicend\ \algorithmicforeach}% \EndForEach
+
+%% Use the option review to obtain double line spacing
+%% \documentclass[preprint,review,12pt]{elsarticle}
+
+%% Use the options 1p,twocolumn; 3p; 3p,twocolumn; 5p; or 5p,twocolumn
+%% for a journal layout:
+%% \documentclass[final,1p,times]{elsarticle}
+%% \documentclass[final,1p,times,twocolumn]{elsarticle}
+%% \documentclass[final,3p,times]{elsarticle}
+%% \documentclass[final,3p,times,twocolumn]{elsarticle}
+%% \documentclass[final,5p,times]{elsarticle}
+%% \documentclass[final,5p,times,twocolumn]{elsarticle}
+
+%% if you use PostScript figures in your article
+%% use the graphics package for simple commands
+%% \usepackage{graphics}
+%% or use the graphicx package for more complicated commands
+%% \usepackage{graphicx}
+%% or use the epsfig package if you prefer to use the old commands
+%% \usepackage{epsfig}
+
+\DeclareUnicodeCharacter{2212}{-}
+
+%% The amssymb package provides various useful mathematical symbols
+\usepackage{amssymb}
+%% The amsthm package provides extended theorem environments
+\usepackage{mathtools}% http://ctan.org/pkg/mathtools
+\usepackage{amsmath,systeme} % equations
+\usepackage{amsthm}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{corollary}{Corollary}[theorem]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{definition}{Definition}[section]
+
+\usepackage[normalem]{ulem}               % to striketrhourhg text
+\newcommand\redout{\bgroup\markoverwith
+{\textcolor{red}{\rule[0.5ex]{2pt}{0.8pt}}}\ULon}
+
+%% The lineno packages adds line numbers. Start line numbering with
+%% \begin{linenumbers}, end it with \end{linenumbers}. Or switch it on
+%% for the whole article with \linenumbers after \end{frontmatter}.
+\usepackage{lineno}
+
+\usepackage{pgfgantt}
+\usepackage{color, colortbl}
+
+% create graphic elements 
+\usepackage{tikz-qtree}
+\usepackage{tikz}
+\usetikzlibrary{matrix,shapes,arrows,positioning,quotes,shadows,decorations.pathreplacing,fadings}
+\usepackage{graphicx}
+\graphicspath{ {./images/} }
+
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.17}
+
+
+\title{Implementation of a Hard Random Instances Generator for the Open Shop Scheduling Problem}   % type title between braces
+\author{Salah Eddine Bouterfif}         % type author(s) between braces
 
 \begin{document}
 \flushbottom
 \maketitle
 \thispagestyle{empty}
 
-The random instances generator takes the number of jobs $n$ and the number of machines $m$ as input and requires three parameters $k$, $p$ and $f$.
+In their effort to calculate a new lower bound for the open shop problem, \cite{gp1999} showed that most open shop instances produced by random generators are easy and proposed a hard instances generator.\par
 
-An instance is generated in two steps, the first step creates the $ n \times m $ matrix $P$ of processing times using the parameter $k$ such that all elements of $P$ are equal to $\dfrac{k}{m}$ (rounded down to the nearest integer). The second step performs a number of perturbations $p$ to the matrix $P$.
+The random generator takes the number of jobs $n$ and the number of machines $m$ as input and requires three parameters $k$, $p$ and $f$.\\
 
-A parameter $f$ is used to calculate $v$: a fixed value \textit{to be subtracted} and $mv$: a \textit{maximum subtractable} value. The parameters $k$, $p$ and $f$ are described by:
+We have adapted the generator from \cite{gp1999} to produce rectangle open shop instances. Algorithm~\ref{algo:hossp} describes how an instance is generated in two steps. The first step creates the $ n \times m $ matrix $P$ of processing times using the parameter $k$ such that all elements of $P$ are equal to $\dfrac{k}{m}$ (rounded down to the nearest integer). The second step performs a number of perturbations $p$ to the matrix $P$.\par
+
+A parameter $f$ is used to calculate $v$: a fixed value \textit{to be subtracted} and $mv$: a \textit{maximum subtractable} value. 
+
+The parameters $k$, $p$ and $f$ are described by:
 
 \begin{itemize}
     \item $k$: integer number, such that the sum of each line of $P$ is equal to $k$. The value $k \mod m$ is added to the diagonal of $P$. 
@@ -24,11 +136,63 @@ A parameter $f$ is used to calculate $v$: a fixed value \textit{to be subtracted
     \item $p$: number of perturbations, such that for each perturbation, two task's processing times $P_{ij}$ and $ P_{kl}$, $i \neq k $ and $j \neq l$, are randomly selected from $P$, from which is subtracted the value of $v$.
     
     \item $f=\{f \in \mathbb{R} \mid 0<f<1\}$, such that:
-    \subitem $mv =  \max\{P_{ij},P_{kl}\}-1$ (subtract 1 to avoid tasks of length 0).      
+    \subitem $mv =  \min\{P_{ij},P_{kl}\}-1$ (subtract 1 to avoid tasks of length 0).      
     \subitem $v = (f \cdot mv) + r $, with $r$: a random value between $0$ and $f \cdot mv$. 
 \end{itemize}
 
 The value subtracted from $P_{ij}$ and $P_{kl}$ is added to $P_{il}$ and $P_{kj}$ to keep the sum of all rows equal to $k$.
+
+\begin{algorithm}[H]
+    \caption{HOSSP: Hard Random Instance Generator.}\label{algo:hossp}
+    \begin{algorithmic}[1]
+      \Procedure{hossp}{$n,m, K, p, f$}
+        \\  \Comment{Step 1: create a matrix $P$}
+        \State $inc := 0$
+        \If{$n=m$} \Comment{square problems}
+            \ForEach {$i \leq n$ and $j \leq m$}
+                    \State $P_{i,j} := \dfrac{K}{m}$
+                \State $P_{i,i} := P_{i,i} + K \mod m$
+            \EndForEach
+        \Else{} \Comment{rectangle problems}
+            \State $m^{\prime} = \min\{n, m\}$
+            \ForEach{$i \leq n$ and $j \leq m$}        
+                \If{$inc = m^{\prime}$}
+                     $inc := 0$
+                \EndIf
+     
+                \State $P_{i, j} := \dfrac{K}{m}$
+                \If{$i \geq m^{\prime}$ and $j = inc$}
+                    \State $P_{i, j} := P_{i,j} + K \mod m$
+                \EndIf
+
+                \If{$i < m^{\prime}$}
+                    \State $P_{i, i} := P_{i,i} + K \mod m$
+                \EndIf
+                    \State $inc := inc+1$;
+            \EndForEach        
+        \EndIf
+        \\ \Comment{Step 2: Add perturbations to the matrix $P$}
+        \ForEach{$i \leq p$}   
+        \\
+        \While{$i \neq j$ and $k \neq l$}
+            \State Randomly select $P_{i,j}, P_{k,l}$                                
+        \EndWhile
+        \\
+        \State $mv =  \min\{P_{ij},P_{kl}\}-1$ \Comment{maximum subtractable value}
+        \State $r:=random(0, mv)$ \Comment{ random value to subtract}
+        \State $v = (f \cdot mv) + r $ \Comment{total value to subtract}
+        \\
+        \State$P_{i,j} := P_{i,j} - v$
+        \State$P_{k,l} := P_{i,j} - v$
+        \\
+        \State$P_{i,l} := P_{i,l} + v$
+        \State$P_{k,j} := P_{k,j} + v$
+        \\  
+        \EndForEach
+        \\
+      \EndProcedure
+    \end{algorithmic}
+  \end{algorithm}
 
 For numerous generated instances the parameters $k$, $p$ and $f$ are randomly generated as follows:
 
@@ -39,7 +203,7 @@ For numerous generated instances the parameters $k$, $p$ and $f$ are randomly ge
 \end{itemize}
 
 
-Note that in the case of $n \neq m$, $k \mod m$ is added the diagonal of top-down square sub-matrices of size $\min\{n,m\}$ of $P$. The main diagonal is used on the remaining rectangle ensuring the sum of all rows of $P$ are equal to $k$. 
+In the case of $n \neq m$, $k \mod m$ is added the diagonal of top-down square sub-matrices of size $\min\{n,m\}$ of $P$. The main diagonal is used on the remaining rectangle ensuring the sum of all rows of $P$ are equal to $k$, this ensure that . 
 
 \begin{thebibliography}{1}
     \bibitem{gp1999} Guéret, C., \& Prins, C. (1999). A new lower bound for the open-shop problem. Annals of Operations Research, 92, 165–183. https://doi.org/10.1023/A:1018930613891.
