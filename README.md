@@ -5,7 +5,7 @@ A random generator of hard open shop scheduling problems based on Guéret and Pr
 
 [Read more here](./doc/hossp.pdf).
 
-[![Build Status](https://github.com/eddinho/hossp/actions/workflows/build.yml/badge.svg)](https://github.com/eddinho/hossp/actions?query=workflow%3ABuild)
+[![Build Status](https://github.com/eddinho/hossp/actions/workflows/master.yml/badge.svg)](https://github.com/eddinho/hossp/actions?query=workflow%3ABuild)
 ## Installation
 
 ```bash
